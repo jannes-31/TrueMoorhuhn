@@ -6,6 +6,7 @@ public class Spiel
     View fenster;
     Welt welt;
     Huhn[] huehner;
+    Munition munition;
     Fadenkreuz fadenkreuz;
     Text punkteAnzeige, trefferText;
 
@@ -45,6 +46,9 @@ public class Spiel
         trefferText.setHidden(true);
         trefferZaehler = 0;
 
+        // 8 Patronen unten rechts
+        munition = new Munition(1396, 732);
+
         fadenkreuz = new Fadenkreuz(800, 400, 1600, 800);
 
         leertasteVorher = false;
@@ -58,6 +62,10 @@ public class Spiel
             if (leertaste && !leertasteVorher)
                 schiessen();
             leertasteVorher = leertaste;
+
+            if (fenster.keyPressed('r'))
+                munition.nachladen();
+            munition.aktualisiere();
 
             for (int i = 0; i < huehner.length; i++)
             {
@@ -82,6 +90,9 @@ public class Spiel
     // Von hinten durchs Array, damit das vorderste (naechste) Huhn getroffen wird
     void schiessen()
     {
+        if (!munition.schiessen())
+            return;
+
         for (int i = huehner.length - 1; i >= 0; i--)
         {
             if (huehner[i].trifft(fadenkreuz.gibTreffpunkt()))
