@@ -5,6 +5,7 @@ public class Spiel
 {
     View fenster;
     Welt welt;
+    Fadenkreuz fadenkreuz;
 
     public static void main(String[] args)
     {
@@ -17,5 +18,12 @@ public class Spiel
         fenster.setBackgroundColor(new Color(105, 200, 230));
 
         welt = new Welt();
+        fadenkreuz = new Fadenkreuz(800, 400);
+
+        while (true)
+        {
+            fadenkreuz.bewege(fenster);
+            fenster.wait(16);
+        }
     }
 }
