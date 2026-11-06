@@ -18,7 +18,7 @@ public class Spiel
         fenster.setBackgroundColor(new Color(105, 200, 230));
 
         welt = new Welt();
-        fadenkreuz = new Fadenkreuz(800, 400);
+        fadenkreuz = new Fadenkreuz(800, 400, 1600, 800);
 
         while (true)
         {

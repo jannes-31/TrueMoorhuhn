@@ -7,10 +7,13 @@ public class Fadenkreuz
     Polygon ringAussen, ringInnen;
     Rectangle linieWaagerecht, linieSenkrecht;
     int tempo;
+    int breite, hoehe;
 
-    Fadenkreuz(double pX, double pY)
+    Fadenkreuz(double pX, double pY, int pBreite, int pHoehe)
     {
         tempo = 12;
+        breite = pBreite;
+        hoehe = pHoehe;
 
         ringAussen = ring(pX, pY, 32, 28);
         ringInnen = ring(pX, pY, 14, 11);
@@ -47,11 +50,11 @@ public class Fadenkreuz
 
         if (pFenster.keyLeftPressed() && gibX() > 0)
             dx = -tempo;
-        if (pFenster.keyRightPressed() && gibX() < pFenster.getWidth())
+        if (pFenster.keyRightPressed() && gibX() < breite)
             dx = tempo;
         if (pFenster.keyUpPressed() && gibY() > 0)
             dy = -tempo;
-        if (pFenster.keyDownPressed() && gibY() < pFenster.getHeight())
+        if (pFenster.keyDownPressed() && gibY() < hoehe)
             dy = tempo;
 
         kreuz.move(dx, dy);
