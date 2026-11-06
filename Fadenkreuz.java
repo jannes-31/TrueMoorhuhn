@@ -12,7 +12,7 @@ public class Fadenkreuz
 
     Fadenkreuz(double pX, double pY, int pBreite, int pHoehe)
     {
-        tempo = 6;
+        tempo = 8;
         breite = pBreite;
         hoehe = pHoehe;
 

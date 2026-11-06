@@ -41,7 +41,7 @@ public class Huhn
         else
         {
             groesse = 50;
-            tempo = 6;
+            tempo = 5;
             punkte = 25;
         }
         faktor = groesse / 100;
