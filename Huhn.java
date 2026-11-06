@@ -6,20 +6,41 @@ public class Huhn
     Sprite huhn;
     Polygon fluegelOben, fluegelUnten;
     double x, y, groesse, faktor, tempo;
-    int richtung;
+    int richtung, entfernung, punkte, breite;
     int flatterZaehler;
+    double welleWinkel, welleHoehe, welleTempo;
 
-    // Das Huhn wird auf einer 100x80 grossen Vorlage gezeichnet und mit pGroesse skaliert.
+    // Das Huhn wird auf einer 100x80 grossen Vorlage gezeichnet und je nach Entfernung skaliert.
+    // pEntfernung: 1 = nah (gross, langsam), 2 = mittel, 3 = fern (klein, schnell)
     // pRichtung: 1 = fliegt nach rechts, -1 = fliegt nach links (dann wird gespiegelt)
-    Huhn(double pX, double pY, double pGroesse, int pRichtung, Color pFarbe)
+    Huhn(int pEntfernung, int pRichtung, Color pFarbe, int pBreite)
     {
-        x = pX;
-        y = pY;
-        groesse = pGroesse;
-        faktor = pGroesse / 100;
+        entfernung = pEntfernung;
         richtung = pRichtung;
-        tempo = 4;
+        breite = pBreite;
+        x = 0;
+        y = 0;
         flatterZaehler = 0;
+
+        if (entfernung == 1)
+        {
+            groesse = 130;
+            tempo = 3;
+            punkte = 5;
+        }
+        else if (entfernung == 2)
+        {
+            groesse = 85;
+            tempo = 4.5;
+            punkte = 10;
+        }
+        else
+        {
+            groesse = 50;
+            tempo = 6;
+            punkte = 25;
+        }
+        faktor = groesse / 100;
 
         Color dunkel = pFarbe.darker();
         Color hell = new Color(245, 230, 200);
@@ -54,6 +75,8 @@ public class Huhn
         huhn.add(fluegelOben);
         huhn.add(fluegelUnten);
         fluegelUnten.setHidden(true);
+
+        neuStarten();
     }
 
     // x-Wert auf der Vorlage, bei richtung -1 gespiegelt
@@ -92,9 +115,13 @@ public class Huhn
         return p;
     }
 
+    // Fliegt geradeaus in Flugrichtung und auf einer Wellenlinie hoch und runter
     void bewege()
     {
-        huhn.move(tempo * richtung, 0);
+        double altY = Math.sin(welleWinkel) * welleHoehe;
+        welleWinkel = welleWinkel + welleTempo;
+        double neuY = Math.sin(welleWinkel) * welleHoehe;
+        huhn.move(tempo * richtung, neuY - altY);
 
         flatterZaehler++;
         if (flatterZaehler >= 8)
@@ -105,19 +132,38 @@ public class Huhn
         }
     }
 
-    boolean istRaus(int pBreite)
+    boolean istRaus()
     {
         if (richtung == 1)
-            return huhn.getShapeX() > pBreite;
+            return huhn.getShapeX() > breite;
         return huhn.getShapeX() + huhn.getShapeWidth() < 0;
     }
 
-    void neuStarten(int pBreite, int pHoehe)
+    // Startet ausserhalb des Fensters mit zufaelligem Abstand, damit die Huehner nicht alle gleichzeitig kommen.
+    // Ferne Huehner fliegen hoeher, nahe tiefer.
+    void neuStarten()
     {
-        double neuY = Tools.randomNumber(20, pHoehe - 250);
-        if (richtung == 1)
-            huhn.moveTo(-huhn.getShapeWidth(), neuY);
+        double neuY;
+        if (entfernung == 1)
+            neuY = Tools.randomNumber(250, 480);
+        else if (entfernung == 2)
+            neuY = Tools.randomNumber(130, 420);
         else
-            huhn.moveTo(pBreite, neuY);
+            neuY = Tools.randomNumber(40, 330);
+
+        int abstand = Tools.randomNumber(0, 1500);
+        if (richtung == 1)
+            huhn.moveTo(-huhn.getShapeWidth() - abstand, neuY);
+        else
+            huhn.moveTo(breite + abstand, neuY);
+
+        welleWinkel = 0;
+        welleHoehe = Tools.randomNumber(10, 60);
+        welleTempo = Tools.randomNumber(2, 6) / 100.0;
+    }
+
+    int gibPunkte()
+    {
+        return punkte;
     }
 }
