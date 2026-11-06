@@ -188,7 +188,7 @@ public class Huhn
     }
 
     // Ein Huhn, das schon faellt, kann nicht nochmal getroffen werden
-    boolean trifft(Shapes pTreffpunkt)
+    boolean trifft(Circle pTreffpunkt)
     {
         return !getroffen && huhn.intersects(pTreffpunkt);
     }
