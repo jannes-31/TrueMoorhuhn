@@ -6,6 +6,7 @@ public class Fadenkreuz
     Sprite kreuz;
     Polygon ringAussen, ringInnen;
     Rectangle linieWaagerecht, linieSenkrecht;
+    Circle treffpunkt;
     int tempo;
     int breite, hoehe;
 
@@ -24,6 +25,9 @@ public class Fadenkreuz
         kreuz.add(ringInnen);
         kreuz.add(linieWaagerecht);
         kreuz.add(linieSenkrecht);
+
+        // Kleiner Punkt in der Mitte, damit wird der Treffer mit intersects geprueft
+        treffpunkt = new Circle(pX - 2, pY - 2, 2, Color.red);
     }
 
     // Ring aus aussen- und innenkreis, der innere Kreis laeuft andersherum und wird so zum Loch
@@ -58,6 +62,7 @@ public class Fadenkreuz
             dy = tempo;
 
         kreuz.move(dx, dy);
+        treffpunkt.move(dx, dy);
     }
 
     double gibX()
@@ -68,5 +73,10 @@ public class Fadenkreuz
     double gibY()
     {
         return kreuz.getCenterY();
+    }
+
+    Circle gibTreffpunkt()
+    {
+        return treffpunkt;
     }
 }

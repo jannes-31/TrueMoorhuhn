@@ -7,6 +7,11 @@ public class Spiel
     Welt welt;
     Huhn[] huehner;
     Fadenkreuz fadenkreuz;
+    Text punkteAnzeige, trefferText;
+
+    int punkte;
+    int trefferZaehler;
+    boolean leertasteVorher;
 
     public static void main(String[] args)
     {
@@ -28,14 +33,31 @@ public class Spiel
             int entfernung = 3 - i / 4;
             int richtung = (i % 2 == 0) ? 1 : -1;
             Color farbe = farben[Tools.randomNumber(0, 2)];
-            huehner[i] = new Huhn(entfernung, richtung, farbe, 1600);
+            huehner[i] = new Huhn(entfernung, richtung, farbe, 1600, 800);
         }
 
+        punkte = 0;
+        punkteAnzeige = new Text(20, 20, "Punkte: 0", Color.black);
+        punkteAnzeige.setFontMonospaced(true, 28);
+
+        trefferText = new Text(0, 0, "", Color.red);
+        trefferText.setFontSansSerif(true, 30);
+        trefferText.setHidden(true);
+        trefferZaehler = 0;
+
         fadenkreuz = new Fadenkreuz(800, 400, 1600, 800);
+
+        leertasteVorher = false;
 
         while (true)
         {
             fadenkreuz.bewege(fenster);
+
+            // Nur beim Druecken schiessen, nicht solange die Taste gehalten wird
+            boolean leertaste = fenster.keyPressed(' ');
+            if (leertaste && !leertasteVorher)
+                schiessen();
+            leertasteVorher = leertaste;
 
             for (int i = 0; i < huehner.length; i++)
             {
@@ -44,7 +66,36 @@ public class Spiel
                     huehner[i].neuStarten();
             }
 
+            // "+Punkte" steigt kurz nach oben und verschwindet
+            if (trefferZaehler > 0)
+            {
+                trefferZaehler--;
+                trefferText.move(0, -1);
+                if (trefferZaehler == 0)
+                    trefferText.setHidden(true);
+            }
+
             fenster.wait(16);
+        }
+    }
+
+    // Von hinten durchs Array, damit das vorderste (naechste) Huhn getroffen wird
+    void schiessen()
+    {
+        for (int i = huehner.length - 1; i >= 0; i--)
+        {
+            if (huehner[i].trifft(fadenkreuz.gibTreffpunkt()))
+            {
+                huehner[i].abschiessen();
+                punkte = punkte + huehner[i].gibPunkte();
+                punkteAnzeige.setText("Punkte: " + punkte);
+
+                trefferText.setText("+" + huehner[i].gibPunkte());
+                trefferText.moveTo(fadenkreuz.gibX() + 20, fadenkreuz.gibY() - 50);
+                trefferText.setHidden(false);
+                trefferZaehler = 40;
+                return;
+            }
         }
     }
 }

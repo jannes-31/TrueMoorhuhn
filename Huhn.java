@@ -6,18 +6,22 @@ public class Huhn
     Sprite huhn;
     Polygon fluegelOben, fluegelUnten;
     double x, y, groesse, faktor, tempo;
-    int richtung, entfernung, punkte, breite;
+    int richtung, entfernung, punkte, breite, hoehe;
+    boolean getroffen;
+    double fallTempo;
     int flatterZaehler;
     double welleWinkel, welleHoehe, welleTempo;
 
     // Das Huhn wird auf einer 100x80 grossen Vorlage gezeichnet und je nach Entfernung skaliert.
     // pEntfernung: 1 = nah (gross, langsam), 2 = mittel, 3 = fern (klein, schnell)
     // pRichtung: 1 = fliegt nach rechts, -1 = fliegt nach links (dann wird gespiegelt)
-    Huhn(int pEntfernung, int pRichtung, Color pFarbe, int pBreite)
+    Huhn(int pEntfernung, int pRichtung, Color pFarbe, int pBreite, int pHoehe)
     {
         entfernung = pEntfernung;
         richtung = pRichtung;
         breite = pBreite;
+        hoehe = pHoehe;
+        getroffen = false;
         x = 0;
         y = 0;
         flatterZaehler = 0;
@@ -118,6 +122,14 @@ public class Huhn
     // Fliegt geradeaus in Flugrichtung und auf einer Wellenlinie hoch und runter
     void bewege()
     {
+        // Abgeschossen: kopfueber nach unten fallen
+        if (getroffen)
+        {
+            fallTempo = fallTempo + 0.6;
+            huhn.move(0, fallTempo);
+            return;
+        }
+
         double altY = Math.sin(welleWinkel) * welleHoehe;
         welleWinkel = welleWinkel + welleTempo;
         double neuY = Math.sin(welleWinkel) * welleHoehe;
@@ -134,6 +146,8 @@ public class Huhn
 
     boolean istRaus()
     {
+        if (getroffen)
+            return huhn.getShapeY() > hoehe;
         if (richtung == 1)
             return huhn.getShapeX() > breite;
         return huhn.getShapeX() + huhn.getShapeWidth() < 0;
@@ -143,6 +157,12 @@ public class Huhn
     // Ferne Huehner fliegen hoeher, nahe tiefer.
     void neuStarten()
     {
+        if (getroffen)
+        {
+            huhn.turn(180);
+            getroffen = false;
+        }
+
         double neuY;
         if (entfernung == 1)
             neuY = Tools.randomNumber(250, 480);
@@ -165,5 +185,20 @@ public class Huhn
     int gibPunkte()
     {
         return punkte;
+    }
+
+    // Ein Huhn, das schon faellt, kann nicht nochmal getroffen werden
+    boolean trifft(Shapes pTreffpunkt)
+    {
+        return !getroffen && huhn.intersects(pTreffpunkt);
+    }
+
+    void abschiessen()
+    {
+        getroffen = true;
+        fallTempo = -4;
+        huhn.turn(180);
+        fluegelOben.setHidden(false);
+        fluegelUnten.setHidden(true);
     }
 }
