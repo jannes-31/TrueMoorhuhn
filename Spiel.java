@@ -6,11 +6,13 @@ public class Spiel
     View fenster;
     Welt welt;
     Huhn[] huehner;
+    Anzeige anzeige;
     Munition munition;
     Fadenkreuz fadenkreuz;
-    Text punkteAnzeige, trefferText;
+    Text trefferText, endText;
 
-    int punkte;
+    int punkte, schuesse;
+    int spielzeit;
     int trefferZaehler;
     boolean leertasteVorher;
 
@@ -37,23 +39,36 @@ public class Spiel
             huehner[i] = new Huhn(entfernung, richtung, farbe, 1600, 800);
         }
 
-        punkte = 0;
-        punkteAnzeige = new Text(20, 20, "Punkte: 0", Color.black);
-        punkteAnzeige.setFontMonospaced(true, 28);
-
         trefferText = new Text(0, 0, "", Color.red);
         trefferText.setFontSansSerif(true, 30);
         trefferText.setHidden(true);
-        trefferZaehler = 0;
+
+        endText = new Text(370, 330, "", Color.red);
+        endText.setFontSansSerif(true, 64);
+        endText.setHidden(true);
+
+        anzeige = new Anzeige(0, 752);
 
         // 8 Patronen unten rechts
         munition = new Munition(1396, 732);
 
         fadenkreuz = new Fadenkreuz(800, 400, 1600, 800);
 
+        spielzeit = 90;
+        spielen();
+    }
+
+    void spielen()
+    {
+        punkte = 0;
+        schuesse = 0;
+        trefferZaehler = 0;
         leertasteVorher = false;
 
-        while (true)
+        long startZeit = Tools.getStartTime();
+        int restZeit = spielzeit;
+
+        while (restZeit > 0)
         {
             fadenkreuz.bewege(fenster);
 
@@ -83,8 +98,14 @@ public class Spiel
                     trefferText.setHidden(true);
             }
 
+            restZeit = spielzeit - (int) Tools.getElapsedTime(startZeit);
+            anzeige.aktualisiere(punkte, schuesse, restZeit);
+
             fenster.wait(16);
         }
+
+        endText.setText("Zeit um!  " + punkte + " Punkte");
+        endText.setHidden(false);
     }
 
     // Von hinten durchs Array, damit das vorderste (naechste) Huhn getroffen wird
@@ -92,6 +113,7 @@ public class Spiel
     {
         if (!munition.schiessen())
             return;
+        schuesse++;
 
         for (int i = huehner.length - 1; i >= 0; i--)
         {
@@ -99,7 +121,6 @@ public class Spiel
             {
                 huehner[i].abschiessen();
                 punkte = punkte + huehner[i].gibPunkte();
-                punkteAnzeige.setText("Punkte: " + punkte);
 
                 trefferText.setText("+" + huehner[i].gibPunkte());
                 trefferText.moveTo(fadenkreuz.gibX() + 20, fadenkreuz.gibY() - 50);
