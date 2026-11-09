@@ -62,15 +62,18 @@ public class Munition
     void aktualisiere()
     {
         if (laedtNach && Tools.getElapsedTime(nachladeStart) >= 1.0)
+            auffuellen();
+    }
+
+    void auffuellen()
+    {
+        laedtNach = false;
+        anzahl = maxAnzahl;
+        for (int i = 0; i < maxAnzahl; i++)
         {
-            laedtNach = false;
-            anzahl = maxAnzahl;
-            for (int i = 0; i < maxAnzahl; i++)
-            {
-                huelsen[i].setHidden(false);
-                boeden[i].setHidden(false);
-            }
-            hinweis.setHidden(true);
+            huelsen[i].setHidden(false);
+            boeden[i].setHidden(false);
         }
+        hinweis.setHidden(true);
     }
 }

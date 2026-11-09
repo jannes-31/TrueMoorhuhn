@@ -5,46 +5,40 @@ public class Huhn
 {
     Sprite huhn;
     Polygon fluegelOben, fluegelUnten;
-    double x, y, groesse, faktor, tempo;
-    int richtung, entfernung, punkte, breite, hoehe;
+    double faktor, tempo, fallTempo, welleWinkel, welleHoehe;
+    int richtung, punkte, flugHoehe, flatterZaehler;
     boolean getroffen;
-    double fallTempo;
-    int flatterZaehler;
-    double welleWinkel, welleHoehe, welleTempo;
 
     // Das Huhn wird auf einer 100x80 grossen Vorlage gezeichnet und je nach Entfernung skaliert.
-    // pEntfernung: 1 = nah (gross, langsam), 2 = mittel, 3 = fern (klein, schnell)
+    // pEntfernung: 1 = nah (gross, langsam), 2 = mittel, 3 = fern (klein, schnell, hoch)
     // pRichtung: 1 = fliegt nach rechts, -1 = fliegt nach links (dann wird gespiegelt)
-    Huhn(int pEntfernung, int pRichtung, Color pFarbe, int pBreite, int pHoehe)
+    Huhn(int pEntfernung, int pRichtung, Color pFarbe)
     {
-        entfernung = pEntfernung;
         richtung = pRichtung;
-        breite = pBreite;
-        hoehe = pHoehe;
         getroffen = false;
-        x = 0;
-        y = 0;
         flatterZaehler = 0;
 
-        if (entfernung == 1)
+        if (pEntfernung == 1)
         {
-            groesse = 130;
+            faktor = 1.3;
             tempo = 3;
             punkte = 5;
+            flugHoehe = 250;
         }
-        else if (entfernung == 2)
+        else if (pEntfernung == 2)
         {
-            groesse = 85;
+            faktor = 0.85;
             tempo = 4.5;
             punkte = 10;
+            flugHoehe = 140;
         }
         else
         {
-            groesse = 50;
+            faktor = 0.5;
             tempo = 5;
             punkte = 25;
+            flugHoehe = 40;
         }
-        faktor = groesse / 100;
 
         Color dunkel = pFarbe.darker();
         Color hell = new Color(245, 230, 200);
@@ -84,43 +78,39 @@ public class Huhn
     }
 
     // x-Wert auf der Vorlage, bei richtung -1 gespiegelt
-    double sx(double pDx, double pBreite)
+    double sx(double pX, double pBreite)
     {
         if (richtung == 1)
-            return x + pDx * faktor;
-        return x + (100 - pDx - pBreite) * faktor;
+            return pX * faktor;
+        return (100 - pX - pBreite) * faktor;
     }
 
-    Ellipse ellipse(double pDx, double pDy, double pB, double pH, Color pFarbe)
+    Ellipse ellipse(double pX, double pY, double pB, double pH, Color pFarbe)
     {
-        return new Ellipse(sx(pDx, pB), y + pDy * faktor, pB * faktor, pH * faktor, pFarbe);
+        return new Ellipse(sx(pX, pB), pY * faktor, pB * faktor, pH * faktor, pFarbe);
     }
 
-    Circle kreis(double pDx, double pDy, double pR, Color pFarbe)
+    Circle kreis(double pX, double pY, double pR, Color pFarbe)
     {
-        return new Circle(sx(pDx, 2 * pR), y + pDy * faktor, pR * faktor, pFarbe);
+        return new Circle(sx(pX, 2 * pR), pY * faktor, pR * faktor, pFarbe);
     }
 
-    Rectangle rechteck(double pDx, double pDy, double pB, double pH, Color pFarbe)
+    Rectangle rechteck(double pX, double pY, double pB, double pH, Color pFarbe)
     {
-        return new Rectangle(sx(pDx, pB), y + pDy * faktor, pB * faktor, pH * faktor, pFarbe);
+        return new Rectangle(sx(pX, pB), pY * faktor, pB * faktor, pH * faktor, pFarbe);
     }
 
     // pPunkte = {x1, y1, x2, y2, ...} auf der Vorlage
     Polygon polygon(double[] pPunkte, Color pFarbe)
     {
-        Polygon p = new Polygon(sx(pPunkte[0], 0), y + pPunkte[1] * faktor, pFarbe);
+        Polygon p = new Polygon(sx(pPunkte[0], 0), pPunkte[1] * faktor, pFarbe);
         for (int i = 2; i < pPunkte.length; i += 2)
-        {
-            double dx = (pPunkte[i] - pPunkte[0]) * faktor * richtung;
-            double dy = (pPunkte[i + 1] - pPunkte[1]) * faktor;
-            p.add(dx, dy);
-        }
+            p.add((pPunkte[i] - pPunkte[0]) * faktor * richtung, (pPunkte[i + 1] - pPunkte[1]) * faktor);
         return p;
     }
 
-    // Fliegt geradeaus in Flugrichtung und auf einer Wellenlinie hoch und runter
-    void bewege()
+    // Fliegt auf einer Wellenlinie, pFaktor macht das Huhn schneller (Schwierigkeit)
+    void bewege(double pFaktor)
     {
         // Abgeschossen: kopfueber nach unten fallen
         if (getroffen)
@@ -130,10 +120,8 @@ public class Huhn
             return;
         }
 
-        double altY = Math.sin(welleWinkel) * welleHoehe;
-        welleWinkel = welleWinkel + welleTempo;
-        double neuY = Math.sin(welleWinkel) * welleHoehe;
-        huhn.move(tempo * richtung, neuY - altY);
+        welleWinkel = welleWinkel + 0.04;
+        huhn.move(tempo * pFaktor * richtung, Math.sin(welleWinkel) * welleHoehe);
 
         flatterZaehler++;
         if (flatterZaehler >= 8)
@@ -147,14 +135,13 @@ public class Huhn
     boolean istRaus()
     {
         if (getroffen)
-            return huhn.getShapeY() > hoehe;
+            return huhn.getShapeY() > 800;
         if (richtung == 1)
-            return huhn.getShapeX() > breite;
+            return huhn.getShapeX() > 1600;
         return huhn.getShapeX() + huhn.getShapeWidth() < 0;
     }
 
-    // Startet ausserhalb des Fensters mit zufaelligem Abstand, damit die Huehner nicht alle gleichzeitig kommen.
-    // Ferne Huehner fliegen hoeher, nahe tiefer.
+    // Startet ausserhalb des Fensters mit zufaelligem Abstand, damit nicht alle gleichzeitig kommen
     void neuStarten()
     {
         if (getroffen)
@@ -163,23 +150,15 @@ public class Huhn
             getroffen = false;
         }
 
-        double neuY;
-        if (entfernung == 1)
-            neuY = Tools.randomNumber(250, 480);
-        else if (entfernung == 2)
-            neuY = Tools.randomNumber(130, 420);
-        else
-            neuY = Tools.randomNumber(40, 330);
-
+        int neuY = Tools.randomNumber(flugHoehe, flugHoehe + 250);
         int abstand = Tools.randomNumber(0, 1500);
         if (richtung == 1)
             huhn.moveTo(-huhn.getShapeWidth() - abstand, neuY);
         else
-            huhn.moveTo(breite + abstand, neuY);
+            huhn.moveTo(1600 + abstand, neuY);
 
         welleWinkel = 0;
-        welleHoehe = Tools.randomNumber(10, 60);
-        welleTempo = Tools.randomNumber(2, 6) / 100.0;
+        welleHoehe = Tools.randomNumber(5, 20) / 10.0;
     }
 
     int gibPunkte()

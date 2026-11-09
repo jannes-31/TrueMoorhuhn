@@ -4,33 +4,24 @@ import java.awt.Color;
 public class Fadenkreuz
 {
     Sprite kreuz;
-    Polygon ringAussen, ringInnen;
-    Rectangle linieWaagerecht, linieSenkrecht;
     Circle treffpunkt;
     int tempo;
-    int breite, hoehe;
 
-    Fadenkreuz(double pX, double pY, int pBreite, int pHoehe)
+    // pX, pY = Mitte des Fadenkreuzes
+    Fadenkreuz(double pX, double pY)
     {
         tempo = 8;
-        breite = pBreite;
-        hoehe = pHoehe;
 
-        ringAussen = ring(pX, pY, 32, 28);
-        ringInnen = ring(pX, pY, 14, 11);
-        linieWaagerecht = new Rectangle(pX - 46, pY - 1, 92, 3, Color.black);
-        linieSenkrecht = new Rectangle(pX - 1, pY - 46, 3, 92, Color.black);
-
-        kreuz = new Sprite(ringAussen);
-        kreuz.add(ringInnen);
-        kreuz.add(linieWaagerecht);
-        kreuz.add(linieSenkrecht);
+        kreuz = new Sprite(ring(pX, pY, 32, 28));
+        kreuz.add(ring(pX, pY, 14, 11));
+        kreuz.add(new Rectangle(pX - 46, pY - 1, 92, 3, Color.black));
+        kreuz.add(new Rectangle(pX - 1, pY - 46, 3, 92, Color.black));
 
         // Kleiner Punkt in der Mitte, damit wird der Treffer mit intersects geprueft
         treffpunkt = new Circle(pX - 2, pY - 2, 2, Color.red);
     }
 
-    // Ring aus aussen- und innenkreis, der innere Kreis laeuft andersherum und wird so zum Loch
+    // Ring aus Aussen- und Innenkreis, der innere Kreis laeuft andersherum und wird so zum Loch
     Polygon ring(double pX, double pY, double pAussen, double pInnen)
     {
         Polygon p = new Polygon(pX + pAussen, pY, Color.black);
@@ -54,11 +45,11 @@ public class Fadenkreuz
 
         if (pFenster.keyLeftPressed() && gibX() > 0)
             dx = -tempo;
-        if (pFenster.keyRightPressed() && gibX() < breite)
+        if (pFenster.keyRightPressed() && gibX() < 1600)
             dx = tempo;
         if (pFenster.keyUpPressed() && gibY() > 0)
             dy = -tempo;
-        if (pFenster.keyDownPressed() && gibY() < hoehe)
+        if (pFenster.keyDownPressed() && gibY() < 800)
             dy = tempo;
 
         kreuz.move(dx, dy);
@@ -67,12 +58,12 @@ public class Fadenkreuz
 
     double gibX()
     {
-        return kreuz.getCenterX();
+        return treffpunkt.getCenterX();
     }
 
     double gibY()
     {
-        return kreuz.getCenterY();
+        return treffpunkt.getCenterY();
     }
 
     Circle gibTreffpunkt()
