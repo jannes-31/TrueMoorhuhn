@@ -5,11 +5,10 @@ public class Huhn
 {
     Sprite huhn;
     Polygon fluegelOben, fluegelUnten;
-    double faktor, tempo, fallTempo, welleWinkel, welleHoehe;
+    double tempo, fallTempo, welleWinkel, welleHoehe;
     int richtung, punkte, flugHoehe, flatterZaehler;
     boolean getroffen;
 
-    // Das Huhn wird auf einer 100x80 grossen Vorlage gezeichnet und je nach Entfernung skaliert.
     // pEntfernung: 1 = nah (gross, langsam), 2 = mittel, 3 = fern (klein, schnell, hoch)
     // pRichtung: 1 = fliegt nach rechts, -1 = fliegt nach links (dann wird gespiegelt)
     Huhn(int pEntfernung, int pRichtung, Color pFarbe)
@@ -17,6 +16,7 @@ public class Huhn
         richtung = pRichtung;
         getroffen = false;
         flatterZaehler = 0;
+        double faktor;
 
         if (pEntfernung == 1)
         {
@@ -45,27 +45,29 @@ public class Huhn
         Color rot = new Color(220, 30, 30);
         Color orange = new Color(250, 160, 20);
 
+        // Das Huhn wird nach rechts schauend in Originalgroesse (ca. 100x80) gezeichnet
+
         // Schwanzfedern
         huhn = new Sprite(polygon(new double[] {22, 34, 2, 10, 10, 14, 6, 24, 24, 40}, dunkel));
         huhn.add(polygon(new double[] {22, 40, 0, 32, 8, 34, 2, 46, 22, 50}, Color.black));
 
         // Beine
-        huhn.add(rechteck(38, 64, 4, 14, orange));
-        huhn.add(rechteck(50, 64, 4, 14, orange));
+        huhn.add(new Rectangle(38, 64, 4, 14, orange));
+        huhn.add(new Rectangle(50, 64, 4, 14, orange));
 
         // Koerper und Bauch
-        huhn.add(ellipse(14, 25, 62, 46, pFarbe));
-        huhn.add(ellipse(32, 44, 40, 24, hell));
+        huhn.add(new Ellipse(14, 25, 62, 46, pFarbe));
+        huhn.add(new Ellipse(32, 44, 40, 24, hell));
 
         // Kopf mit Kamm, Auge, Schnabel und Kehllappen
-        huhn.add(kreis(67, 0, 5, rot));
-        huhn.add(kreis(75, -4, 5, rot));
-        huhn.add(kreis(83, 0, 5, rot));
-        huhn.add(kreis(62, 6, 17, pFarbe));
-        huhn.add(ellipse(88, 30, 8, 12, rot));
+        huhn.add(new Circle(67, 0, 5, rot));
+        huhn.add(new Circle(75, -4, 5, rot));
+        huhn.add(new Circle(83, 0, 5, rot));
+        huhn.add(new Circle(62, 6, 17, pFarbe));
+        huhn.add(new Ellipse(88, 30, 8, 12, rot));
         huhn.add(polygon(new double[] {92, 18, 108, 24, 92, 30}, orange));
-        huhn.add(kreis(78, 12, 6, Color.white));
-        huhn.add(kreis(83, 15, 3, Color.black));
+        huhn.add(new Circle(78, 12, 6, Color.white));
+        huhn.add(new Circle(83, 15, 3, Color.black));
 
         // Fluegel, abwechselnd sichtbar
         fluegelOben = polygon(new double[] {28, 42, 64, 40, 60, 14, 54, 20, 50, -2, 44, 12, 38, -6, 34, 12, 24, 4}, dunkel);
@@ -74,38 +76,20 @@ public class Huhn
         huhn.add(fluegelUnten);
         fluegelUnten.setHidden(true);
 
+        // Je nach Entfernung verkleinern, nach links fliegende Huehner spiegeln
+        huhn.scale(faktor, faktor);
+        if (richtung == -1)
+            huhn.flipHorizontal();
+
         neuStarten();
     }
 
-    // x-Wert auf der Vorlage, bei richtung -1 gespiegelt
-    double sx(double pX, double pBreite)
-    {
-        if (richtung == 1)
-            return pX * faktor;
-        return (100 - pX - pBreite) * faktor;
-    }
-
-    Ellipse ellipse(double pX, double pY, double pB, double pH, Color pFarbe)
-    {
-        return new Ellipse(sx(pX, pB), pY * faktor, pB * faktor, pH * faktor, pFarbe);
-    }
-
-    Circle kreis(double pX, double pY, double pR, Color pFarbe)
-    {
-        return new Circle(sx(pX, 2 * pR), pY * faktor, pR * faktor, pFarbe);
-    }
-
-    Rectangle rechteck(double pX, double pY, double pB, double pH, Color pFarbe)
-    {
-        return new Rectangle(sx(pX, pB), pY * faktor, pB * faktor, pH * faktor, pFarbe);
-    }
-
-    // pPunkte = {x1, y1, x2, y2, ...} auf der Vorlage
+    // pPunkte = {x1, y1, x2, y2, ...}, add erwartet die Punkte relativ zum ersten Punkt
     Polygon polygon(double[] pPunkte, Color pFarbe)
     {
-        Polygon p = new Polygon(sx(pPunkte[0], 0), pPunkte[1] * faktor, pFarbe);
+        Polygon p = new Polygon(pPunkte[0], pPunkte[1], pFarbe);
         for (int i = 2; i < pPunkte.length; i += 2)
-            p.add((pPunkte[i] - pPunkte[0]) * faktor * richtung, (pPunkte[i + 1] - pPunkte[1]) * faktor);
+            p.add(pPunkte[i] - pPunkte[0], pPunkte[i + 1] - pPunkte[1]);
         return p;
     }
 
